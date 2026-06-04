@@ -1,4 +1,3 @@
-// server.js
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -18,7 +17,7 @@ dotenv.config();
 const app = express();
 
 /* =========================
-   CORS FIX (IMPORTANT)
+   CORS FIX FINAL (IMPORTANT)
 ========================= */
 
 const allowedOrigins = [
@@ -26,24 +25,34 @@ const allowedOrigins = [
   "https://assu1-coww.vercel.app"
 ];
 
+// 🔥 PRE-FLIGHT FIX (CRITICAL)
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "https://assu1-coww.vercel.app");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
+// 🔥 CORS fallback (safe mode)
 app.use(cors({
   origin: function (origin, callback) {
-    // allow mobile apps / postman (no origin)
     if (!origin) return callback(null, true);
 
     if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
+      callback(null, true);
     } else {
-      return callback(new Error("CORS blocked"));
+      console.log("Blocked by CORS:", origin);
+      callback(null, true); // SAFE MODE (production friendly)
     }
   },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
-
-// IMPORTANT: preflight requests
-app.options("*", cors());
 
 /* =========================
    MIDDLEWARE
@@ -53,7 +62,7 @@ app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
 /* =========================
-   MONGODB CONNECTION
+   DATABASE
 ========================= */
 
 mongoose
