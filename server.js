@@ -3,7 +3,6 @@ import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 
-// Routes
 import authRoutes from "./routes/auth.routes.js";
 import declarationATRoutes from "./routes/declarationAT.js";
 import rapportMedecinRoutes from "./routes/rapportMedecin.js";
@@ -17,61 +16,45 @@ dotenv.config();
 const app = express();
 
 /* =========================
-   CORS FIX FINAL (IMPORTANT)
+   1. CORS (ABSOLU FIRST)
 ========================= */
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://assu1-coww.vercel.app"
-];
-
-// 🔥 PRE-FLIGHT FIX (CRITICAL)
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "https://assu1-coww.vercel.app");
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-
-  next();
-});
-
-// 🔥 CORS fallback (safe mode)
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.log("Blocked by CORS:", origin);
-      callback(null, true); // SAFE MODE (production friendly)
-    }
-  },
+  origin: "https://assu1-coww.vercel.app",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
 }));
 
 /* =========================
-   MIDDLEWARE
+   2. PRE-FLIGHT FIX (CRITICAL)
+========================= */
+
+app.options("*", cors());
+
+/* =========================
+   3. BODY PARSER
 ========================= */
 
 app.use(express.json());
+
+/* =========================
+   4. STATIC
+========================= */
+
 app.use("/uploads", express.static("uploads"));
 
 /* =========================
-   DATABASE
+   5. MONGO DB
 ========================= */
 
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connecté ✅"))
-  .catch(err => console.error("Erreur MongoDB:", err));
+  .catch(err => console.error(err));
 
 /* =========================
-   ROUTES
+   6. ROUTES
 ========================= */
 
 app.use("/api/auth", authRoutes);
@@ -83,16 +66,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/users", usersRoutes);
 
 /* =========================
-   TEST ROUTE
-========================= */
-
-app.post("/test", (req, res) => {
-  console.log("Test route hit:", req.body);
-  res.json({ message: "Test OK" });
-});
-
-/* =========================
-   404 HANDLER
+   7. 404
 ========================= */
 
 app.use((req, res) => {
@@ -100,11 +74,11 @@ app.use((req, res) => {
 });
 
 /* =========================
-   START SERVER
+   8. SERVER
 ========================= */
 
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Serveur lancé sur http://localhost:${PORT}`);
+  console.log("Server running on port", PORT);
 });
