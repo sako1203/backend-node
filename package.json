@@ -1,8 +1,19 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "",
+  "homepage": "https://github.com/sako1203/backend-node#readme",
+  "bugs": {
+    "url": "https://github.com/sako1203/backend-node/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sako1203/backend-node.git"
+  },
+  "license": "ISC",
+  "author": "",
   "type": "module",
+  "main": "index.js",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js"
